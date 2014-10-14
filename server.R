@@ -1,21 +1,19 @@
 library(ggvis)
+library(ggplot2)
 library(dplyr)
 library(pryr)
 
 # range for density plot
 x <- seq(-5, 5, 0.1)
 
+# Wilcox p_value function
+w_sim <- function(n, m, f, g){
+  wilcox.test(f(n), g(m), exact = FALSE, correct = FALSE)$p.value  
+}
+
 # ToDo:
-# * better way to store population dists
 # * need to check hypothesis truths
-# * simulate p-values from wilcox.tests
-
-
-# write function that generates pick pop window
-# bundle/extract normal_params, and uniform_params from pick pop
-# pop1 <- gen_pop("1")
-# pop2 <- gen_pop("2")
-# plot_pop, sim_pop
+# * just update UI instead of generating http://shiny.rstudio.com/gallery/update-input-demo.html
 
 
 shinyServer(function(input, output) {
@@ -67,24 +65,12 @@ shinyServer(function(input, output) {
     pop1_gen()$ui
   })
   
-  rfunc1 <- reactive({
-    if (is.null(input$pop1))
-      return()
-    pop1_gen()$r_func
-  })
-  
   
     
   output$ui2 <- renderUI({
     if (is.null(input$pop2))
       return()
     pop2_gen()$ui
-  })
-  
-  rfunc2 <- reactive({
-    if (is.null(input$pop2))
-      return()
-    pop2_gen()$r_func
   })
   
   dcurve <- reactive({
@@ -99,7 +85,40 @@ shinyServer(function(input, output) {
     layer_paths(fill = ~ pop, opacity := 0.2) %>%
     bind_shiny("ggvis1")
   
+  one_sample <- reactive({
+    input$run_sim  
+    m <- isolate(eval(parse(text = input$m)))
+    
+    # Use isolate() to avoid dependency on input$obs
+    isolate(data.frame(
+        x = c(pop1_gen()$r_func(input$n), pop2_gen()$r_func(m)),
+        pop = rep(c("pop1", "pop2"), c(input$n, m))) %>% group_by(pop))
+  })
   
+  sim_pvals <- reactive({
+    # Take a dependency on input$goButton
+      input$run_sim  
+      m <- isolate(eval(parse(text = input$m)))
+    
+    # Use isolate() to avoid resimulating before pressing button
+    isolate(data.frame(p = replicate(input$nsim, wilcox.test(
+          pop1_gen()$r_func(input$n),  
+          pop2_gen()$r_func(m), 
+          exact = FALSE, correct = FALSE)$p.value)))
+    
+  })
+  
+  ggvis(one_sample) %>%
+    layer_histograms(x = ~ x, fill= ~ pop, opacity := 0.2) %>%
+    bind_shiny("samp_hists")
+  
+  ggvis(sim_pvals) %>%
+    layer_histograms(x = ~ p, origin = 0, binwidth = 0.05, right = FALSE) %>%
+    bind_shiny("p_hist")
+
+  output$rej_rate <- renderText({
+    paste(signif(mean(sim_pvals() < 0.05), 2) * 100, "%") 
+  })
   
 })
 # for each dist
