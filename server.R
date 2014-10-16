@@ -1,127 +1,116 @@
-library(ggvis)
-library(ggplot2)
 library(dplyr)
-library(pryr)
 
 # range for density plot
-x <- seq(-5, 5, 0.1)
-
-# Wilcox p_value function
-w_sim <- function(n, m, f, g){
-  wilcox.test(f(n), g(m), exact = FALSE, correct = FALSE)$p.value  
-}
-
-# ToDo:
-# * need to check hypothesis truths
-# * just update UI instead of generating http://shiny.rstudio.com/gallery/update-input-demo.html
-
+xlims <- c(-10, 10)
+x <- seq(xlims[1], xlims[2], 0.1)
 
 shinyServer(function(input, output) {
-  norm_params <- function(prefix){
-      # mean <- input[[paste0(prefix, "nmean")]]
-      # sd <- input[[paste0(prefix, "nsd")]]
-      # defaults when inputs aren't set
-      # if(is.null(mean)) mean  <- 0
-      # if(is.null(sd)) sd  <- 1
-      
-      list(
-        ui = wellPanel(
-          sliderInput(paste0(prefix, "nmean"), "mean",
-            min = -5, max = 5, value = 0),
-          sliderInput(paste0(prefix, "nsd"), "sd",
-            min = 1, max = 5, value = 1)),
-        p_func = partial(dnorm, mean = ifelse(is.null(input[[paste0(prefix, "nmean")]]), 0, input[[paste0(prefix, "nmean")]]), sd = ifelse(is.null(input[[paste0(prefix, "nsd")]]), 1, input[[paste0(prefix, "nsd")]])),
-        r_func = partial(rnorm, mean = ifelse(is.null(input[[paste0(prefix, "nmean")]]), 0, input[[paste0(prefix, "nmean")]]), sd = ifelse(is.null(input[[paste0(prefix, "nsd")]]), 1,input[[paste0(prefix, "nsd")]])))
-  }
+  source("pop-dists.R", local = TRUE)
   
-  uniform_params <- function(prefix){
-    list(
-    ui = wellPanel(
-      sliderInput(paste0(prefix, "ucenter"), "center",
-        min = -5, max = 5, value = 0),
-      sliderInput(paste0(prefix, "uwidth"), "width",
-        min = 1, max = 5, value = 1)),
-    p_func = function(x) {
-      dunif(x, min = ifelse(is.null(input[[paste0(prefix, "ucenter")]]), 0, input[[paste0(prefix, "ucenter")]] - (1/2)*input[[paste0(prefix, "uwidth")]]), 
-        max = ifelse(is.null(input[[paste0(prefix, "ucenter")]]), 1, input[[paste0(prefix, "ucenter")]] + (1/2)*input[[paste0(prefix, "uwidth")]]))},
-    r_func = function(n) runif(n, min = input[[paste0(prefix, "ucenter")]] - (1/2)*input[[paste0(prefix, "uwidth")]], 
-      max = input[[paste0(prefix, "ucenter")]] + (1/2)*input[[paste0(prefix, "uwidth")]]))
-}
-
+  # == choosing population distributions 
+  # ===========================================================#
   pop_gen <- function(prefix){
     reactive({
       switch(input[[prefix]],
-        "Normal" =  norm_params(prefix),
-        "Uniform" = uniform_params(prefix))
+        "Normal" =  norm_ui(prefix),
+        "Exponential" = exp_ui(prefix),
+        "Gamma" = gamma_ui(prefix),
+        "Mixture" = mixture_ui(prefix))
     })
   }
   
-  pop1_gen <- pop_gen("pop1")
-  pop2_gen <- pop_gen("pop2")
+  pops <- c("pop1", "pop2")
+   
+  lapply(pops, function(prefix){
+    output[[paste0(prefix, "_ui")]] <- renderUI(pop_gen(prefix)())}
+  )
   
-  output$ui1 <- renderUI({
-    if (is.null(input$pop1))
-      return()
-    pop1_gen()$ui
-  })
+  fs <- reactive({
+    switch(input$pop1,
+      "Normal" = norm_gen_funcs("pop1")(),
+      "Exponential" = exp_gen_funcs("pop1")(),
+      "Gamma" = gamma_gen_funcs("pop1")(),
+      "Mixture" = mixture_gen_funcs("pop1")())})
   
-  
-    
-  output$ui2 <- renderUI({
-    if (is.null(input$pop2))
-      return()
-    pop2_gen()$ui
-  })
+  gs <- reactive({
+    switch(input$pop2,
+      "Normal" = norm_gen_funcs("pop2")(),
+      "Exponential" = exp_gen_funcs("pop2")(),
+      "Gamma" = gamma_gen_funcs("pop2")(),
+      "Mixture" = mixture_gen_funcs("pop2")())})
+
+  # == plotting population distributions 
+  # ===========================================================#
   
   dcurve <- reactive({
-    group_by(data.frame(x = c(x, x), 
-      y = c(pop1_gen()$p_func(x), pop2_gen()$p_func(x)),
-      pop = rep(c("Pop 1", "Pop 2"), c(length(x), length(x)))),
+    tmp <- do.call(fs()$dfunc, c(list(x = x), fs()$params))
+    tmp2 <- do.call(gs()$dfunc, c(list(x = x), gs()$params))
+    
+    group_by(data.frame(x = c(min(x) -0.5, x, max(x) + 0.5, min(x) -0.5, x, max(x) +0.5), 
+      y = c(0, tmp, 0, 0, tmp2, 0),
+      pop = rep(c("Pop 1", "Pop 2"), c(length(x) + 2, length(x) + 2))),
       pop)
   })
   
-  dcurve %>% 
-    ggvis(~x, ~y) %>%
-    layer_paths(fill = ~ pop, opacity := 0.2) %>%
-    bind_shiny("ggvis1")
   
+  observe({
+    if(!is.null(dcurve())){
+      dcurve %>% 
+        ggvis(~x, ~y) %>%
+        layer_paths(fill = ~ pop, opacity := 0.2) %>%
+        scale_numeric("x", domain = xlims, expand = 0, nice = FALSE, clamp = TRUE) %>%
+        bind_shiny("ggvis1")
+    }})
+  
+  # == check truth of nulls == #
+  # ===========================================================#
+  # == simulate one sample == #
+  # ===========================================================#  
   one_sample <- reactive({
-    input$run_sim  
+    input$run_sample  
     m <- isolate(eval(parse(text = input$m)))
-    
-    # Use isolate() to avoid dependency on input$obs
+      
+    # Use isolate() to avoid dependency on input$n and input$m
     isolate(data.frame(
-        x = c(pop1_gen()$r_func(input$n), pop2_gen()$r_func(m)),
+      x = c(do.call(fs()$rfunc, c(list(n = input$n), fs()$params)),
+            do.call(gs()$rfunc, c(list(n = m), gs()$params))),
         pop = rep(c("pop1", "pop2"), c(input$n, m))) %>% group_by(pop))
+    })
+    
+  output$samp_hist <- renderPlot({
+    ggplot(one_sample()) +
+      geom_histogram(aes(x = x, fill = pop)) +
+      facet_grid(pop ~ .) +
+      scale_fill_manual(values = c("pop1" = "#1f77b4", "pop2" = "#ff7f0e" )) +
+      theme_bw() + theme(legend.position = "none")
   })
   
+  # == simulate many samples == #
+  # ===========================================================#  
   sim_pvals <- reactive({
     # Take a dependency on input$goButton
-      input$run_sim  
-      m <- isolate(eval(parse(text = input$m)))
-    
+    input$run_sim  
+    m <- isolate(eval(parse(text = input$m)))
+  
     # Use isolate() to avoid resimulating before pressing button
-    isolate(data.frame(p = replicate(input$nsim, wilcox.test(
-          pop1_gen()$r_func(input$n),  
-          pop2_gen()$r_func(m), 
+    ps <- isolate(data.frame(p = replicate(input$nsim, wilcox.test(
+          do.call(fs()$rfunc, c(list(n = input$n), fs()$params)),  
+          do.call(gs()$rfunc, c(list(n = m), gs()$params)), 
           exact = FALSE, correct = FALSE)$p.value)))
-    
+    ps$reject <- ifelse(ps$p < 0.05, "reject", "fail to reject")
+    ps
   })
   
-  ggvis(one_sample) %>%
-    layer_histograms(x = ~ x, fill= ~ pop, opacity := 0.2) %>%
-    bind_shiny("samp_hists")
+  output$p_hist <- renderPlot({
+    ggplot(sim_pvals()) +
+      geom_histogram(aes(x = p, fill= reject), breaks = seq(0, 1, 0.05), right = TRUE) +
+      xlab("Wilcoxon p-value") + 
+      scale_fill_manual(values = c("black", "#E41A1C")) +
+      theme_bw() + theme(legend.position = "none") 
+  })
   
-  ggvis(sim_pvals) %>%
-    layer_histograms(x = ~ p, origin = 0, binwidth = 0.05, right = FALSE) %>%
-    bind_shiny("p_hist")
-
   output$rej_rate <- renderText({
-    paste(signif(mean(sim_pvals() < 0.05), 2) * 100, "%") 
+    paste(signif(mean(sim_pvals()$p < 0.05), 3) * 100, "%") 
   })
   
 })
-# for each dist
-# function that creates UI for parameters
-# construct sampling function
-# constructs curve for plotting

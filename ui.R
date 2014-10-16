@@ -1,38 +1,36 @@
+pop_ui <- function(prefix, label){
+  wellPanel(
+    selectInput(prefix, label,
+      c("Normal", "Exponential", "Gamma", "Mixture")),
+    uiOutput(paste0(prefix, "_ui")))
+}
+
 shinyUI(fluidPage(
   titlePanel("Population distributions"),
   fluidRow(
-    column(3, wellPanel(
-        selectInput("pop1", "Population 1",
-          c("Normal", "Uniform")),
-        uiOutput("ui1")
-      )
-    ),    
-    column(3, wellPanel(
-      selectInput("pop2", "Population 2",
-        c("Normal", "Uniform")),
-      uiOutput("ui2")
+    column(3, pop_ui("pop1", "Population 1")),
+    column(3, pop_ui("pop2", "Population 2")),
+    column(3, ggvisOutput("ggvis1"))
+  ),
+  h2("Truth of nulls"),
+  h2("Samples from populations"),
+  fluidRow(
+    column(4, wellPanel(
+      numericInput("n", "n =",
+        10, 500, value = 30),
+      textInput("m", "m=", "n"),
+      actionButton("run_sample", "Sample")
     )),
-    column(3,
-        ggvisOutput("ggvis1")
-    )
+    column(6, plotOutput("samp_hist"))
   ),
-  fluidRow(column(6,
-      h2("Truth of hypotheses")
-    )
-  ),
-  titlePanel("Wilcoxon p-value distribution"),
+  h2("Simulate Wilcoxon"),
   fluidRow(
     column(3, wellPanel(
       selectInput("nsim", "Number of simulations",
         c(500, 1000, 5000), selected = 500),
-      numericInput("n", "Sample size, population 1, n:",
-        10, 500, value = 30),
-      textInput("m", "Sample size population 2, m", "n"),
       actionButton("run_sim", "Simulate")
     )),
-    column(3, p("Rejection rate:", textOutput("rej_rate"))),
-    column(3, ggvisOutput("p_hist")))
-    
+    column(1, p("Rejection rate:", textOutput("rej_rate"))),
+    column(6, plotOutput("p_hist"))
   )
-)
-
+))
