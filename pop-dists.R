@@ -19,7 +19,8 @@ norm_gen_funcs <- function(prefix) {
     if(is.null(mean)) mean <- 0
     if(is.null(sd)) sd <- 1
     list(rfunc = rnorm, dfunc = dnorm,
-      params = list(mean = mean, sd = sd))
+      params = list(mean = mean, sd = sd),
+      props = list(mean = mean, median = mean))
   })
 }
 
@@ -47,7 +48,7 @@ mixture_ui <- function(prefix){
       sliderInput(paste0(prefix, "mix_sd2"), "sd2",
         min = 1, max = 5, value = 1),
       sliderInput(paste0(prefix, "mix_prop"), "proportion 1",
-        min = 0, max = 1, value = 0.5)) 
+        min = 0, max = 1, value = 0.5, step = 0.1)) 
 }
 
 mixture_gen_funcs <- function(prefix) {
@@ -65,7 +66,8 @@ mixture_gen_funcs <- function(prefix) {
     if(is.null(prop)) prop <- 0.5
     
     list(rfunc = rmix, dfunc = dmix,
-      params = list(means = c(mean1, mean2), sds = c(sd1, sd2), prop = prop))
+      params = list(means = c(mean1, mean2), sds = c(sd1, sd2), prop = prop),
+      props = list(mean = prop*mean1 + (1-prop)*mean2, median = NA))
   })
 }
 
@@ -84,7 +86,8 @@ exp_gen_funcs <- function(prefix){
     rate <- input[[paste0(prefix, "exp_rate")]]
     if(is.null(rate)) rate <- 1
     list(rfunc = rexp, dfunc = dexp,
-      params = list(rate = rate))
+      params = list(rate = rate),
+      props = list(mean = 1/rate, median = 1/rate*log(2)))
   })
 }
 
@@ -107,7 +110,8 @@ gamma_gen_funcs <- function(prefix){
     if(is.null(shape)) shape <- 1
     
     list(rfunc = rgamma, dfunc = dgamma,
-      params = list(shape = shape, rate = rate))
+      params = list(shape = shape, rate = rate),
+      props = list(mean = shape*(1/rate), median = qgamma(0.5, shape = shape, rate = rate)))
   })
 }
 

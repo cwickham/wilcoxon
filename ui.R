@@ -1,7 +1,9 @@
+library(ggvis)
+
 pop_ui <- function(prefix, label){
   wellPanel(
     selectInput(prefix, label,
-      c("Normal", "Exponential", "Gamma", "Mixture")),
+      c("Normal", "Gamma", "Mixture")),
     uiOutput(paste0(prefix, "_ui")))
 }
 
@@ -13,15 +15,16 @@ shinyUI(fluidPage(
     column(3, ggvisOutput("ggvis1"))
   ),
   h2("Truth of nulls"),
+  fluidRow(uiOutput("null")),
   h2("Samples from populations"),
   fluidRow(
-    column(4, wellPanel(
+    column(3, wellPanel(
       numericInput("n", "n =",
         10, 500, value = 30),
       textInput("m", "m=", "n"),
       actionButton("run_sample", "Sample")
     )),
-    column(6, plotOutput("samp_hist"))
+    column(6, offset = 1, plotOutput("samp_hist"))
   ),
   h2("Simulate Wilcoxon"),
   fluidRow(
@@ -33,4 +36,5 @@ shinyUI(fluidPage(
     column(1, p("Rejection rate:", textOutput("rej_rate"))),
     column(6, plotOutput("p_hist"))
   )
+  #fluidRow(verbatimTextOutput("check"))
 ))
