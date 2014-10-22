@@ -54,7 +54,7 @@ mixnorm_gen_funcs <- function(prefix) {
     list(rfunc = rmixnorm, dfunc = dmixnorm,
       params = list(p1 = prop, mu1 = mean1, mu2 = mean2, sd1 = sd1, sd2 = sd2),
       props = list(mean = prop*mean1 + (1-prop)*mean2, 
-        median = qmixnorm(0.5, p1 = prop, mu1 = mean1, mu2 = mean2, sd1 = sd1, sd2 = sd2)))
+        median = qmixnorm(0.5, p1 = prop, mu1 = mean1, sd1 = sd1, mu2 = mean2, sd2 = sd2)))
   })
 }
 

@@ -14,7 +14,11 @@ shinyServer(function(input, output) {
   # ===========================================================#
   pop_gen <- function(prefix){
     reactive({
-      match.fun(paste0(input[[prefix]], "_ui"))(prefix)
+      switch(input[[prefix]],
+        "norm" = norm_ui(prefix),
+        "exp" = exp_ui(prefix),
+        "gamma" = gamma_ui(prefix),
+        "mixnorm" = mixnorm_ui(prefix))
     })
   }
   
@@ -37,9 +41,6 @@ shinyServer(function(input, output) {
   # functionalize and remove duplication at some point
 
 fs <- reactive({
-#   fun_name <- paste0(input$pop1, "_gen_funcs")
-#   fun <- match.fun(fun_name)
-#   fun("pop1")()
   switch(input$pop1,
     "norm" = norm_gen_funcs("pop1")(),
     "exp" = exp_gen_funcs("pop1")(),
@@ -55,7 +56,7 @@ fs <- reactive({
       "gamma" = gamma_gen_funcs("pop2")(),
       "mixnorm" = mixnorm_gen_funcs("pop2")())})
 
-  # output$check <- renderPrint({reactiveValuesToList(input)})
+  output$check <- renderPrint({reactiveValuesToList(input)})
   # == plotting population distributions 
   # ===========================================================#
   
@@ -69,9 +70,16 @@ fs <- reactive({
       pop)
   })
   
+  mean_lines <- reactive({
+    data.frame(y = c(0, 1, 0, 1),
+      x = rep(c(fs()$props$mean, gs()$props$mean), each = 2),
+      pop = rep(c("Pop 1", "Pop 2"), c(2, 2)))
+  })
+  
   dcurve %>% 
     ggvis(~x, ~y) %>%
     layer_paths(fill = ~ pop, opacity := 0.4) %>%
+#    layer_lines(data = mean_lines()) %>%
     scale_numeric("x", domain = xlims, expand = 0, nice = FALSE, clamp = TRUE) %>% 
     set_options(width = 300, height = 200) %>%   
     hide_axis("y") %>%

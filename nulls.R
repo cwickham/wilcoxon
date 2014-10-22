@@ -1,4 +1,5 @@
 # functions for determining truth of null hypotheses
+source("pXgreaterYFun.R")
 
 # Null 1: F = G
 null1 <- reactive({
@@ -16,5 +17,5 @@ null3 <- reactive({
 
 # Null 4: P(X > Y) = 0.5 X ~ F, Y ~ G
 null4 <- reactive({
-  NA
+  isTRUE(all.equal(pXgreaterY(input$pop1, fs()$params, input$pop2, gs()$params), 0.5, tol = 1e-5))
 })
