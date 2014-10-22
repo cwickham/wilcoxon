@@ -1,5 +1,6 @@
 # Functions that generate parameter UIs and set up sampling
 # and density functions
+`%||%` <- function(x, y) if (is.null(x)) y else x
 
 # == Single Normal == #
 # =================== #
@@ -14,10 +15,9 @@ norm_ui <- function(prefix){
 
 norm_gen_funcs <- function(prefix) {
   reactive({
-    mean <- input[[paste0(prefix, "normal_mean")]]
-    sd <- input[[paste0(prefix, "normal_sd")]]
-    if(is.null(mean)) mean <- 0
-    if(is.null(sd)) sd <- 1
+    mean <- input[[paste0(prefix, "normal_mean")]] %||% 0
+    sd <- input[[paste0(prefix, "normal_sd")]] %||% 1
+    
     list(rfunc = rnorm, dfunc = dnorm,
       params = list(mean = mean, sd = sd),
       props = list(mean = mean, median = mean))
@@ -45,17 +45,11 @@ mixnorm_ui <- function(prefix){
 
 mixnorm_gen_funcs <- function(prefix) {
   reactive({
-    mean1 <- input[[paste0(prefix, "mix_mean1")]]
-    mean2 <- input[[paste0(prefix, "mix_mean2")]]
-    sd1 <- input[[paste0(prefix, "mix_sd1")]]
-    sd2 <- input[[paste0(prefix, "mix_sd2")]]
-    prop <- input[[paste0(prefix, "mix_prop")]]
-    
-    if(is.null(mean1)) mean1 <- -1
-    if(is.null(mean2)) mean2<- 1
-    if(is.null(sd1)) sd1 <- 1
-    if(is.null(sd2)) sd2<- 1
-    if(is.null(prop)) prop <- 0.5
+    mean1 <- input[[paste0(prefix, "mix_mean1")]] %||% -1
+    mean2 <- input[[paste0(prefix, "mix_mean2")]] %||% 1
+    sd1 <- input[[paste0(prefix, "mix_sd1")]] %||% 1
+    sd2 <- input[[paste0(prefix, "mix_sd2")]] %||% 1
+    prop <- input[[paste0(prefix, "mix_prop")]] %||% 0.5
     
     list(rfunc = rmixnorm, dfunc = dmixnorm,
       params = list(p1 = prop, mu1 = mean1, mu2 = mean2, sd1 = sd1, sd2 = sd2),
@@ -76,8 +70,8 @@ exp_ui <- function(prefix){
 
 exp_gen_funcs <- function(prefix){
   reactive({
-    rate <- input[[paste0(prefix, "exp_rate")]]
-    if(is.null(rate)) rate <- 1
+    rate <- input[[paste0(prefix, "exp_rate")]] %||% 1
+    
     list(rfunc = rexp, dfunc = dexp,
       params = list(rate = rate),
       props = list(mean = 1/rate, median = 1/rate*log(2)))
@@ -97,10 +91,8 @@ gamma_ui <- function(prefix){
 
 gamma_gen_funcs <- function(prefix){
   reactive({
-    rate <- input[[paste0(prefix, "gamma_rate")]]
-    if(is.null(rate)) rate <- 1
-    shape <- input[[paste0(prefix, "gamma_shape")]]
-    if(is.null(shape)) shape <- 1
+    rate <- input[[paste0(prefix, "gamma_rate")]] %||% 1
+    shape <- input[[paste0(prefix, "gamma_shape")]] %||% 1
     
     list(rfunc = rgamma, dfunc = dgamma,
       params = list(shape = shape, rate = rate),
