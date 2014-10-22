@@ -27,15 +27,7 @@ norm_gen_funcs <- function(prefix) {
 
 # == Normal Mixture == #
 # ==================== #
-
-rmix <- function(n, means, sds, prop){
-  which_dist <- sample(1:2, size = n, prob = c(prop, 1-prop), replace = TRUE)
-  rnorm(n, mean = means[which_dist], sd = sds[which_dist])
-}
-
-dmix <- function(x, means, sds, prop){
-  prop*dnorm(x, mean = means[1], sd = sds[1]) + (1-prop)*dnorm(x, mean = means[2], sd = sds[2])
-}
+source("mixtureDistFuns.R")
 
 mixture_ui <- function(prefix){
  wellPanel(
@@ -65,8 +57,8 @@ mixture_gen_funcs <- function(prefix) {
     if(is.null(sd2)) sd2<- 1
     if(is.null(prop)) prop <- 0.5
     
-    list(rfunc = rmix, dfunc = dmix,
-      params = list(means = c(mean1, mean2), sds = c(sd1, sd2), prop = prop),
+    list(rfunc = rmixnorm, dfunc = dmixnorm,
+      params = list(p1 = prop, mu1 = mean1, mu2 = mean2, sd1 = sd1, sd2 = sd2),
       props = list(mean = prop*mean1 + (1-prop)*mean2, median = NA))
   })
 }
