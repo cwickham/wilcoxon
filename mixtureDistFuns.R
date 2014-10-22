@@ -9,12 +9,14 @@ dmixnorm <- function(x, p1, mu1, sd1, mu2, sd2){
 	return(p1*dnorm(x, mu1, sd1) + (1-p1)*dnorm(x, mu2, sd2))
 }
 
+
 pmixnorm <- function(q, p1, mu1, sd1, mu2, sd2){
 	return(p1*pnorm(q, mu1, sd1) + (1-p1)*pnorm(q, mu2, sd2))
 }
 
-qmixnorm <- function(p, p1, mu1, sd1, mu2, sd2, tol=1e-10, maxiter=20){
-	q1 <- qnorm(p, mu1, sd1)
+# needs to take vector valued p for pXgreaterY
+qmixnorm_old <- function(p, p1, mu1, sd1, mu2, sd2, tol=1e-10, maxiter=20){
+  q1 <- qnorm(p, mu1, sd1)
 	q2 <- qnorm(p, mu2, sd2)
 	q0.lo <- min(q1, q2)
 	q0.hi <- max(q1, q2)
@@ -56,6 +58,7 @@ qmixnorm <- function(p, p1, mu1, sd1, mu2, sd2, tol=1e-10, maxiter=20){
 	return(q0.new)
 }
 
+qmixnorm <- Vectorize(qmixnorm_old, "p")
 
 # ########################################
 # 

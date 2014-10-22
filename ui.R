@@ -35,6 +35,6 @@ shinyUI(fluidPage(
     )),
     column(1, p("Rejection rate:", textOutput("rej_rate"))),
     column(6, plotOutput("p_hist"))
-  ),
-  fluidRow(verbatimTextOutput("check"))
+  ) #,
+  #fluidRow(verbatimTextOutput("check"))
 ))
