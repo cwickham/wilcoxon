@@ -3,7 +3,7 @@ library(ggvis)
 pop_ui <- function(prefix, label){
   wellPanel(
     selectInput(prefix, label,
-      c("Normal", "Gamma", "Mixture")),
+      c("Normal" = "norm", "Gamma" = "gamma", "Mixture" = "mixnorm")),
     uiOutput(paste0(prefix, "_ui")))
 }
 
@@ -35,6 +35,6 @@ shinyUI(fluidPage(
     )),
     column(1, p("Rejection rate:", textOutput("rej_rate"))),
     column(6, plotOutput("p_hist"))
-  )
-  #fluidRow(verbatimTextOutput("check"))
+  ),
+  fluidRow(verbatimTextOutput("check"))
 ))

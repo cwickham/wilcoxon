@@ -38,26 +38,30 @@ pXgreaterY <- function(distX, xpars, distY, ypars, ulims=NULL, nval=1e6, tol=1e-
 
 ########################################
 
-# Checks using pXgreaterY
-
-# Should be 0.5
-pXgreaterY('norm', list(mean=0, sd=1), 'norm', list(mean=0, sd=1))
-
-# Should be 0.5
-pXgreaterY('exp', list(rate=1), 'exp', list(rate=1))
-
-# Should be 0.875 = 0.5 + 0.5*0.5 + 0.5*0.25
-pXgreaterY('unif', list(min=1, max=3), 'unif', list(min=0, max=2))
-
-# Should be 0.5
-pXgreaterY('unif', list(min=1, max=3), 'unif', list(min=1, max=3))
-
-# Should be 0.5
-pXgreaterY('norm', list(mean=0, sd=1), 'norm', list(mean=0, sd=2))
-
-# Should be 0.5
-pXgreaterY('norm', list(mean=0, sd=2), 'norm', list(mean=0, sd=1))
-
-# Check: answer to first should be 1-answer to second
-pXgreaterY('norm', list(mean=0, sd=1), 'norm', list(mean=2, sd=1))
-pXgreaterY('norm', list(mean=2, sd=1), 'norm', list(mean=0, sd=1))
+# # Checks using pXgreaterY
+# 
+# # Should be 0.5
+# all.equal(pXgreaterY('norm', list(mean=0, sd=1), 'norm', list(mean=0, sd=1)), 0.5)
+# 
+# # Should be 0.5
+# all.equal(pXgreaterY('exp', list(rate=1), 'exp', list(rate=1)), 0.5)
+# 
+# # Should be 0.875 = 0.5 + 0.5*0.5 + 0.5*0.25
+# all.equal(pXgreaterY('unif', list(min=1, max=3), 'unif', list(min=0, max=2)), 0.875,
+#   tol = 1e-5)
+# 
+# 
+# # Should be 0.5
+# all.equal(pXgreaterY('unif', list(min=1, max=3), 'unif', list(min=1, max=3)), 0.5,
+#   tol = 1e-5)
+# 
+# # Should be 0.5
+# all.equal(pXgreaterY('norm', list(mean=0, sd=1), 'norm', list(mean=0, sd=2)), 0.5, tol = 1e-5)
+# 
+# # Should be 0.5
+# all.equal(pXgreaterY('norm', list(mean=0, sd=2), 'norm', list(mean=0, sd=1)), 0.5, tol = 1e-5)
+# 
+# 
+# # Check: answer to first should be 1-answer to second
+# all.equal(pXgreaterY('norm', list(mean=0, sd=1), 'norm', list(mean=2, sd=1)),
+# 1 - pXgreaterY('norm', list(mean=2, sd=1), 'norm', list(mean=0, sd=1)), tol = 1e-5 )

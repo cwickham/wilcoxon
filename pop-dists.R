@@ -29,7 +29,7 @@ norm_gen_funcs <- function(prefix) {
 # ==================== #
 source("mixtureDistFuns.R")
 
-mixture_ui <- function(prefix){
+mixnorm_ui <- function(prefix){
  wellPanel(
       sliderInput(paste0(prefix, "mix_mean1"), "mean1",
         min = -5, max = 5, value = -1),
@@ -43,7 +43,7 @@ mixture_ui <- function(prefix){
         min = 0, max = 1, value = 0.5, step = 0.1)) 
 }
 
-mixture_gen_funcs <- function(prefix) {
+mixnorm_gen_funcs <- function(prefix) {
   reactive({
     mean1 <- input[[paste0(prefix, "mix_mean1")]]
     mean2 <- input[[paste0(prefix, "mix_mean2")]]

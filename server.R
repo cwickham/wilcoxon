@@ -14,11 +14,7 @@ shinyServer(function(input, output) {
   # ===========================================================#
   pop_gen <- function(prefix){
     reactive({
-      switch(input[[prefix]],
-        "Normal" =  norm_ui(prefix),
-        "Exponential" = exp_ui(prefix),
-        "Gamma" = gamma_ui(prefix),
-        "Mixture" = mixture_ui(prefix))
+      match.fun(paste0(input[[prefix]], "_ui"))(prefix)
     })
   }
   
@@ -31,27 +27,33 @@ shinyServer(function(input, output) {
   gen_funcs <- function(prefix) {
     reactive({
       switch(input[[prefix]],
-        "Normal" = norm_gen_funcs(prefix)(),
-        "Exponential" = exp_gen_funcs(prefix)(),
-        "Gamma" = gamma_gen_funcs(prefix)(),
-        "Mixture" = mixture_gen_funcs(prefix)())
+        "norm" = norm_gen_funcs(prefix)(),
+        "exp" = exp_gen_funcs(prefix)(),
+        "gamma" = gamma_gen_funcs(prefix)(),
+        "mixnorm" = mixnorm_gen_funcs(prefix)())
     })
   }
   
   # functionalize and remove duplication at some point
-  fs <- reactive({
-    switch(input$pop1,
-      "Normal" = norm_gen_funcs("pop1")(),
-      "Exponential" = exp_gen_funcs("pop1")(),
-      "Gamma" = gamma_gen_funcs("pop1")(),
-      "Mixture" = mixture_gen_funcs("pop1")())})
+
+fs <- reactive({
+#   fun_name <- paste0(input$pop1, "_gen_funcs")
+#   fun <- match.fun(fun_name)
+#   fun("pop1")()
+  switch(input$pop1,
+    "norm" = norm_gen_funcs("pop1")(),
+    "exp" = exp_gen_funcs("pop1")(),
+    "gamma" = gamma_gen_funcs("pop1")(),
+    "mixnorm" = mixnorm_gen_funcs("pop1")())
   
+})
+
   gs <- reactive({
     switch(input$pop2,
-      "Normal" = norm_gen_funcs("pop2")(),
-      "Exponential" = exp_gen_funcs("pop2")(),
-      "Gamma" = gamma_gen_funcs("pop2")(),
-      "Mixture" = mixture_gen_funcs("pop2")())})
+      "norm" = norm_gen_funcs("pop2")(),
+      "exp" = exp_gen_funcs("pop2")(),
+      "gamma" = gamma_gen_funcs("pop2")(),
+      "mixnorm" = mixnorm_gen_funcs("pop2")())})
 
   # output$check <- renderPrint({reactiveValuesToList(input)})
   # == plotting population distributions 
