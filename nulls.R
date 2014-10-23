@@ -19,3 +19,7 @@ null3 <- reactive({
 null4 <- reactive({
   isTRUE(all.equal(pXgreaterY(input$pop1, fs()$params, input$pop2, gs()$params), 0.5, tol = 1e-5))
 })
+
+pXgY <- reactive({
+  pXgreaterY(input$pop1, fs()$params, input$pop2, gs()$params)
+})

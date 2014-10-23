@@ -12,7 +12,12 @@ shinyUI(fluidPage(
   fluidRow(
     column(3, pop_ui("pop1", "Population 1")),
     column(3, pop_ui("pop2", "Population 2")),
-    column(3, ggvisOutput("ggvis1"))
+    column(3, 
+      ggvisOutput("ggvis1"),
+      ggvisOutput("ggvis2"),
+      ggvisOutput("ggvis3"),
+      p("P(X > Y) = ", textOutput("pXgreaterY", container = span))
+      )
   ),
   h2("Truth of nulls"),
   fluidRow(uiOutput("null")),

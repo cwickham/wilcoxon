@@ -56,7 +56,7 @@ fs <- reactive({
       "gamma" = gamma_gen_funcs("pop2")(),
       "mixnorm" = mixnorm_gen_funcs("pop2")())})
 
-  output$check <- renderPrint({reactiveValuesToList(input)})
+  
   # == plotting population distributions 
   # ===========================================================#
   
@@ -73,19 +73,48 @@ fs <- reactive({
   mean_lines <- reactive({
     data.frame(y = c(0, 1, 0, 1),
       x = rep(c(fs()$props$mean, gs()$props$mean), each = 2),
-      pop = rep(c("Pop 1", "Pop 2"), c(2, 2)))
+      pop = rep(c("Pop 1", "Pop 2"), c(2, 2))) %>% group_by(pop)
   })
   
+  median_lines <- reactive({
+    data.frame(y = c(0, 1, 0, 1),
+      x = rep(c(fs()$props$median, gs()$props$median), each = 2),
+      pop = rep(c("Pop 1", "Pop 2"), c(2, 2))) %>% group_by(pop)
+  })
+  
+  output$check <- renderPrint({str(mean_lines())})
+    
   dcurve %>% 
     ggvis(~x, ~y) %>%
     layer_paths(fill = ~ pop, opacity := 0.4) %>%
-#    layer_lines(data = mean_lines()) %>%
     scale_numeric("x", domain = xlims, expand = 0, nice = FALSE, clamp = TRUE) %>% 
     set_options(width = 300, height = 200) %>%   
     hide_axis("y") %>%
     add_axis("x", grid = FALSE) %>%
     bind_shiny("ggvis1")
 
+  mean_lines %>% 
+    ggvis(~x, ~y) %>%
+    layer_lines(stroke = ~ pop) %>%
+    scale_numeric("x", label = "Means", domain = xlims, 
+      expand = 0, nice = FALSE, clamp = TRUE) %>% 
+    set_options(width = 300, height = 25) %>%   
+    hide_axis("y") %>%
+    add_axis("x", grid = FALSE) %>%
+    bind_shiny("ggvis2")
+  
+  median_lines %>% 
+    ggvis(~x, ~y) %>%
+    layer_lines(stroke = ~ pop) %>%
+    scale_numeric("x", label = "Medians", domain = xlims, 
+      expand = 0, nice = FALSE, clamp = TRUE) %>% 
+    set_options(width = 300, height = 25) %>%   
+    hide_axis("y") %>%
+    add_axis("x", grid = FALSE) %>%
+    bind_shiny("ggvis3")  
+
+  output$pXgreaterY <- renderText(round(pXgY(), 3))
+  
   # == check truth of nulls == #
   # ===========================================================#
 
@@ -140,7 +169,8 @@ fs <- reactive({
   output$p_hist <- renderPlot({
     if(input$run_sim == 0) return()
     ggplot(sim_pvals()) +
-      geom_histogram(aes(x = p, fill= reject), breaks = seq(0, 1, 0.05), right = TRUE) +
+      geom_histogram(aes(x = p, fill= reject), alpha = I(0.8),
+        breaks = seq(0, 1, 0.05), right = TRUE) +
       xlab("Wilcoxon p-value") + 
       scale_fill_manual(values = c("grey40", "#E41A1C")) +
       theme_bw() + theme(legend.position = "none") 
