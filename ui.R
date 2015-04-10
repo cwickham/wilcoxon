@@ -16,6 +16,8 @@ construct_null <- function(name, val, cond){
 
 shinyUI(
 fluidPage(theme = shinytheme("spacelab"),  
+  p("Code available at:", a("https://github.com/cwickham/wilcoxon",
+    href = "https://github.com/cwickham/wilcoxon")),
   titlePanel("Population distributions"),
   fluidRow(withMathJax(),
     pop_ui("pop1", "Population 1, F"),
