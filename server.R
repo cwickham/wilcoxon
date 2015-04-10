@@ -2,9 +2,6 @@ library(ggplot2)
 library(ggvis)
 library(dplyr)
 
-# range for density plot
-xlims <- c(-10, 10)
-x <- seq(xlims[1], xlims[2], 0.1)
 
 shinyServer(function(input, output) {
   source("pop-dists.R", local = TRUE)
@@ -88,27 +85,27 @@ fs <- reactive({
     ggvis(~x, ~y) %>%
     layer_paths(fill = ~ pop, opacity := 0.4) %>%
     scale_numeric("x", domain = xlims, expand = 0, nice = FALSE, clamp = TRUE) %>% 
-    set_options(width = 300, height = 200) %>%   
+    set_options(width = 400, height = 200) %>%   
     hide_axis("y") %>%
     add_axis("x", grid = FALSE) %>%
     bind_shiny("ggvis1")
 
   mean_lines %>% 
     ggvis(~x, ~y) %>%
-    layer_lines(stroke = ~ pop) %>%
+    layer_lines(stroke = ~ pop, strokeWidth := 2) %>%
     scale_numeric("x", label = "Means", domain = xlims, 
       expand = 0, nice = FALSE, clamp = TRUE) %>% 
-    set_options(width = 300, height = 25) %>%   
+    set_options(width = 400, height = 60) %>%   
     hide_axis("y") %>%
     add_axis("x", grid = FALSE) %>%
     bind_shiny("ggvis2")
   
   median_lines %>% 
     ggvis(~x, ~y) %>%
-    layer_lines(stroke = ~ pop) %>%
+    layer_lines(stroke = ~ pop, strokeWidth := 2) %>%
     scale_numeric("x", label = "Medians", domain = xlims, 
       expand = 0, nice = FALSE, clamp = TRUE) %>% 
-    set_options(width = 300, height = 25) %>%   
+    set_options(width = 400, height = 60) %>%   
     hide_axis("y") %>%
     add_axis("x", grid = FALSE) %>%
     bind_shiny("ggvis3")  
@@ -119,10 +116,11 @@ fs <- reactive({
   # ===========================================================#
 
   output$null <- renderUI({
-    div(p("Null 1, F = G:", null1()), 
-      p("Null 2, E(F) = E(G):", null2()),
-      p("Null 3, median(F) = median(G)", null3()), 
-      p("Null 4 P(X > Y) = 0.5, X~F, Y~G", null4()))
+    withMathJax(
+    p( strong(null2()), "Equal means, \\(H_0^{(1)}: \\mu_F = \\mu_G\\)"),
+      p(strong(null3()), "Equal medians, \\(H_0^{(2)}: m_F = m_G \\)"), 
+      p(strong(null4()), "Symmetry of \\(P(X > Y)\\), \\(H_0^{(3*)}: \\theta = P(X > Y) = 0.5\\)"),
+      p(strong(null1()), "Equal distribtions, \\(H_0^{(4)}: F = G \\)"))
   })
   
   

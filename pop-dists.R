@@ -2,20 +2,24 @@
 # and density functions
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
+# range for density plot
+xlims <- c(-5, 15)
+x <- seq(xlims[1], xlims[2], 0.1)
+
 # == Single Normal == #
 # =================== #
 
 norm_ui <- function(prefix){
   wellPanel(
-      sliderInput(paste0(prefix, "normal_mean"), "mean",
-        min = -5, max = 5, value = 0),
-      sliderInput(paste0(prefix, "normal_sd"), "sd",
+      sliderInput(paste0(prefix, "normal_mean"), "Mean",
+        min = 0, max = 10, value = 1),
+      sliderInput(paste0(prefix, "normal_sd"), "Standard deviation",
         min = 1, max = 5, value = 1)) 
 }
 
 norm_gen_funcs <- function(prefix) {
   reactive({
-    mean <- input[[paste0(prefix, "normal_mean")]] %||% 0
+    mean <- input[[paste0(prefix, "normal_mean")]] %||% 1
     sd <- input[[paste0(prefix, "normal_sd")]] %||% 1
     
     list(rfunc = rnorm, dfunc = dnorm,
@@ -32,11 +36,11 @@ source("mixtureDistFuns.R")
 mixnorm_ui <- function(prefix){
  wellPanel(
       sliderInput(paste0(prefix, "mix_mean1"), "mean1",
-        min = -5, max = 5, value = -1),
+        min = 0, max = 10, value = 2),
       sliderInput(paste0(prefix, "mix_sd1"), "sd1",
         min = 1, max = 5, value = 1),
       sliderInput(paste0(prefix, "mix_mean2"), "mean2",
-        min = -5, max = 5, value = 1),
+        min = 0, max = 10, value = 8),
       sliderInput(paste0(prefix, "mix_sd2"), "sd2",
         min = 1, max = 5, value = 1),
       sliderInput(paste0(prefix, "mix_prop"), "proportion 1",
@@ -45,8 +49,8 @@ mixnorm_ui <- function(prefix){
 
 mixnorm_gen_funcs <- function(prefix) {
   reactive({
-    mean1 <- input[[paste0(prefix, "mix_mean1")]] %||% -1
-    mean2 <- input[[paste0(prefix, "mix_mean2")]] %||% 1
+    mean1 <- input[[paste0(prefix, "mix_mean1")]] %||% 2
+    mean2 <- input[[paste0(prefix, "mix_mean2")]] %||% 8
     sd1 <- input[[paste0(prefix, "mix_sd1")]] %||% 1
     sd2 <- input[[paste0(prefix, "mix_sd2")]] %||% 1
     prop <- input[[paste0(prefix, "mix_prop")]] %||% 0.5
