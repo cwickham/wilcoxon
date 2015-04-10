@@ -8,20 +8,30 @@ pop_ui <- function(prefix, label){
     uiOutput(paste0(prefix, "_ui")))
 }
 
+construct_null <- function(name, val, cond){
+  p(name, textOutput(val, container = strong), 
+    span(cond, class = "text-muted"))
+}
+
 shinyUI(
 fluidPage(theme = shinytheme("spacelab"),  
   titlePanel("Population distributions"),
-  fluidRow(
+  fluidRow(withMathJax(),
     pop_ui("pop1", "Population 1, F"),
     pop_ui("pop2", "Population 2, G"),
     column(6, 
-      ggvisOutput("ggvis1"),
+      construct_null("Equal distribtions", "null4", 
+        "\\(H_0^{(4)}: F = G \\)"),
+      ggvisOutput("ggvis1"), 
+      construct_null("Equal means", 
+        "null1", "\\(H_0^{(1)}: \\mu_F = \\mu_G \\)"),
       ggvisOutput("ggvis2"),
+      construct_null("Equal medians", "null2", 
+        "\\(H_0^{(2)}: m_F = m_G \\)"),
       ggvisOutput("ggvis3"),
+      construct_null("Symmetry of \\(P(X > Y)\\)", "null3", 
+        "\\(H_0^{(3*)}: \\theta = P(X > Y) = 0.5\\)"),
       p("P(X > Y) = ", textOutput("pXgreaterY", container = span)))),
-  fluidRow(column(6, 
-      h2("Truth of nulls"),
-      withMathJax(), uiOutput("null"))),
   h2("Samples from populations"),
   fluidRow(
     column(3, wellPanel(

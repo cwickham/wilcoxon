@@ -112,16 +112,17 @@ fs <- reactive({
 
   output$pXgreaterY <- renderText(round(pXgY(), 3))
   
-  # == check truth of nulls == #
+  # == check truth of nulls ===== 
   # ===========================================================#
 
-  output$null <- renderUI({
-    withMathJax(
-    p( strong(null2()), "Equal means, \\(H_0^{(1)}: \\mu_F = \\mu_G\\)"),
-      p(strong(null3()), "Equal medians, \\(H_0^{(2)}: m_F = m_G \\)"), 
-      p(strong(null4()), "Symmetry of \\(P(X > Y)\\), \\(H_0^{(3*)}: \\theta = P(X > Y) = 0.5\\)"),
-      p(strong(null1()), "Equal distribtions, \\(H_0^{(4)}: F = G \\)"))
-  })
+  output$null1 <- renderText({
+    null1()})
+  output$null2 <- renderText({
+    null2()})
+  output$null3 <- renderText({
+    null3()})
+  output$null4 <- renderText({
+    null4()})
   
   
   # == simulate one sample == #
