@@ -35,15 +35,15 @@ source("mixtureDistFuns.R")
 
 mixnorm_ui <- function(prefix){
  wellPanel(
-      sliderInput(paste0(prefix, "mix_mean1"), "mean1",
+      sliderInput(paste0(prefix, "mix_mean1"), "Mean 1",
         min = 0, max = 10, value = 2),
-      sliderInput(paste0(prefix, "mix_sd1"), "sd1",
+      sliderInput(paste0(prefix, "mix_sd1"), "Standard deviation 1",
         min = 1, max = 5, value = 1),
-      sliderInput(paste0(prefix, "mix_mean2"), "mean2",
+      sliderInput(paste0(prefix, "mix_mean2"), "Mean 2",
         min = 0, max = 10, value = 8),
-      sliderInput(paste0(prefix, "mix_sd2"), "sd2",
+      sliderInput(paste0(prefix, "mix_sd2"), "Standard deviation 2",
         min = 1, max = 5, value = 1),
-      sliderInput(paste0(prefix, "mix_prop"), "proportion 1",
+      sliderInput(paste0(prefix, "mix_prop"), "Mixing proportion",
         min = 0, max = 1, value = 0.5, step = 0.1)) 
 }
 

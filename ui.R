@@ -4,7 +4,8 @@ library(shinythemes)
 pop_ui <- function(prefix, label){
   column(3,    
     selectInput(prefix, label,
-      c("Normal" = "norm", "Gamma" = "gamma", "Mixture" = "mixnorm")),
+      c("Normal" = "norm", "Gamma" = "gamma", 
+        "Mixture of Normals" = "mixnorm")),
     uiOutput(paste0(prefix, "_ui")))
 }
 
